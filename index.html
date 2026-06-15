@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoteMatrix Verifier | SINAG 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --blue:        #1a4fa0;
+            --blue-deep:   #0d2d5e;
+            --blue-mid:    #1e5cbf;
+            --blue-light:  #dce8fc;
+            --gold:        #f5a623;
+            --gold-dark:   #c97f00;
+            --gold-light:  #fff7e6;
+            --text:        #0b1728;
+            --text-2:      #3d5068;
+            --muted:       #7b8fa8;
+            --border:      #dde5f0;
+            --white:       #ffffff;
+            --surface:     #f2f5fb;
+            --surface-2:   #e8edf8;
+            --grade7:      #d4600a;
+            --grade7-bg:   #fff3e8;
+            --grade11:     #1a4fa0;
+            --grade11-bg:  #e8f0fc;
+            --radius-sm:   8px;
+            --radius:      14px;
+            --radius-lg:   20px;
+            --shadow-sm:   0 1px 3px rgba(11,23,40,0.07);
+            --shadow-md:   0 4px 16px rgba(11,23,40,0.10);
+            --shadow-lg:   0 10px 40px rgba(11,23,40,0.13);
+            --font:        'Inter', system-ui, sans-serif;
+            --font-mono:   'JetBrains Mono', monospace;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font);
+            background: var(--surface);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .site-header {
+            background: var(--blue-deep);
+            border-bottom: 2px solid var(--gold);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(13,45,94,0.35);
+        }
+
+        .header-inner {
+            max-width: 980px;
+            margin: auto;
+            padding: 14px 28px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-group img,
+        .logo-right img {
+            height: 52px;
+            width: auto;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.30));
+            transition: transform 0.25s ease;
+        }
+
+        .logo-group img:hover,
+        .logo-right img:hover { transform: scale(1.05); }
+
+        .logo-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-center { text-align: center; }
+
+        .header-center .brand {
+            font-size: 1.45rem;
+            font-weight: 900;
+            color: var(--white);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+
+        .header-center .brand em {
+            font-style: normal;
+            color: var(--gold);
+        }
+
+        .header-center .school-name {
+            font-size: 0.68rem;
+            color: rgba(255,255,255,0.50);
+            font-weight: 500;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(245,166,35,0.15);
+            border: 1px solid rgba(245,166,35,0.35);
+            border-radius: 100px;
+            padding: 4px 12px 4px 9px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--gold);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-top: 8px;
+        }
+
+        .pulse-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--gold);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .pulse-dot::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            background: rgba(245,166,35,0.40);
+            animation: ripple 1.8s ease-out infinite;
+        }
+
+        @keyframes ripple {
+            0%   { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(2.4); opacity: 0; }
+        }
+
+        .main {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 36px 24px 64px;
+        }
+
+        .page-heading {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .page-heading h2 {
+            font-size: 1.55rem;
+            font-weight: 900;
+            color: var(--blue-deep);
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            line-height: 1.1;
+        }
+
+        .page-heading .eyebrow {
+            font-size: 0.70rem;
+            font-weight: 700;
+            color: var(--gold-dark);
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .tally-badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--muted);
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 5px 14px;
+            white-space: nowrap;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .grade-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            animation: fadeUp 0.45s cubic-bezier(0.22,1,0.36,1) both;
+        }
+
+        .grade-card:nth-child(2) { animation-delay: 0.07s; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .grade-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 900;
+            color: var(--white);
+            flex-shrink: 0;
+            letter-spacing: 0;
+        }
+
+        .grade-pill.g7  { background: linear-gradient(135deg, #e07c1a, #c45f00); box-shadow: 0 4px 12px rgba(212,96,10,0.35); }
+        .grade-pill.g11 { background: linear-gradient(135deg, #1e5cbf, #0d2d5e); box-shadow: 0 4px 12px rgba(26,79,160,0.35); }
+
+        .grade-label {
+            font-size: 1.0rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: 0.01em;
+        }
+
+        .grade-sub {
+            font-size: 0.73rem;
+            color: var(--muted);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .candidate-count {
+            margin-left: auto;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--muted);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 4px 11px;
+        }
+
+        .candidates-list {
+            padding: 20px 24px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .candidate-row {
+            position: relative;
+        }
+
+        .candidate-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 9px;
+            gap: 10px;
+        }
+
+        .candidate-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .candidate-rank {
+            width: 22px; height: 22px;
+            border-radius: 6px;
+            font-size: 0.62rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .rank-1     { background: #ffe9a0; color: #8a5e00; }
+        .rank-other { background: var(--surface-2); color: var(--muted); }
+
+        .candidate-name {
+            font-size: 0.90rem;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .candidate-row.leading .candidate-name {
+            color: var(--blue-deep);
+            font-weight: 700;
+        }
+
+        .leading-tag {
+            font-size: 0.58rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            background: var(--gold-light);
+            color: var(--gold-dark);
+            border: 1px solid rgba(201,127,0,0.2);
+            padding: 2px 7px;
+            border-radius: 100px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .candidate-right {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .candidate-votes {
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .candidate-pct {
+            font-size: 0.70rem;
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        .bar-track {
+            height: 7px;
+            background: var(--surface-2);
+            border-radius: 100px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 100px;
+            transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+            width: 0;
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px 18px;
+            margin-top: 6px;
+            box-shadow: var(--shadow-sm);
+            gap: 12px;
+        }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 0.78rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34,197,94,0.18);
+            flex-shrink: 0;
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+
+        .status-dot.loading { background: var(--gold); box-shadow: 0 0 0 3px rgba(245,166,35,0.20); }
+        .status-dot.error   { background: #ef4444;   box-shadow: 0 0 0 3px rgba(239,68,68,0.18); }
+
+        .status-right {
+            font-size: 0.73rem;
+            font-weight: 600;
+            color: var(--blue);
+            font-family: var(--font-mono);
+        }
+
+        .retry-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--blue);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 8px 16px;
+            font-size: 0.80rem;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.04em;
+            transition: background 0.2s, transform 0.15s;
+            margin-top: 14px;
+        }
+
+        .retry-btn:hover  { background: var(--blue-mid); }
+        .retry-btn:active { transform: scale(0.97); }
+
+        .skeleton-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .skel {
+            background: linear-gradient(90deg, #edf0f7 25%, #e0e5f0 50%, #edf0f7 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.6s infinite;
+            border-radius: 6px;
+        }
+
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .skel-title { height: 18px; width: 130px; margin-bottom: 22px; }
+        .skel-bar   { height: 8px; margin-bottom: 14px; border-radius: 100px; }
+        .skel-bar.w80 { width: 80%; }
+        .skel-bar.w60 { width: 60%; }
+        .skel-bar.w40 { width: 40%; }
+
+        .empty-state {
+            text-align: center;
+            padding: 56px 20px;
+            color: var(--muted);
+        }
+
+        .empty-state svg { opacity: 0.30; margin-bottom: 14px; }
+
+        .empty-state .state-title {
+            font-size: 1.0rem;
+            font-weight: 700;
+            color: var(--text-2);
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            font-size: 0.84rem;
+            color: var(--muted);
+            max-width: 320px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        #update-flash {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 9999;
+            background: linear-gradient(90deg, var(--blue-deep), var(--blue-mid));
+            border-bottom: 2px solid var(--gold);
+            color: #fff;
+            text-align: center;
+            font-family: var(--font);
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            padding: 8px 16px;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+            pointer-events: none;
+        }
+
+        @media (max-width: 680px) {
+            .header-inner {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 10px;
+                padding: 14px 18px;
+            }
+
+            .logo-group { justify-content: center; }
+            .logo-right { justify-content: center; }
+            .header-center .brand { font-size: 1.2rem; }
+            .main { padding: 24px 14px 52px; }
+            .card-header { padding: 16px 16px 14px; }
+            .candidates-list { padding: 16px 16px 20px; gap: 18px; }
+            .page-heading { flex-direction: column; align-items: flex-start; }
+        }
+
+        @media (max-width: 420px) {
+            .logo-group img,
+            .logo-right img { height: 40px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="site-header">
+    <div class="header-inner">
+        <div class="logo-group">
+            <img src="https://lh3.googleusercontent.com/d/1g4ACYCovpgjH5g1Jbk9Yv9X0zYln4aAx" alt="TCNHS Logo">
+        </div>
+
+        <div class="header-center">
+            <div class="brand">VoteMatrix <em>Verifier</em></div>
+            <div class="school-name">Tagum City National High School</div>
+            <div class="live-badge">
+                <span class="pulse-dot"></span>
+                Live Election Feed
+            </div>
+        </div>
+
+        <div class="logo-right">
+            <img src="https://lh3.googleusercontent.com/d/1GEs_jXzDdKgqBvKUUKj8hx8jhatiXbM9" alt="SINAG 2026">
+            <img src="https://lh3.googleusercontent.com/d/1RgGS7KSoPApNBqNtPlzWo9PSl_jesSNg" alt="COMEA Logo">
+        </div>
+    </div>
+</header>
+
+<main class="main">
+
+    <div class="page-heading">
+        <div>
+            <div class="eyebrow">SINAG 2026 — Official Tally</div>
+            <h2>Grade Level Representatives</h2>
+        </div>
+        <div class="tally-badge" id="tally-badge">Loading…</div>
+    </div>
+
+    <div id="skeleton">
+        <div class="skeleton-card">
+            <div class="skel skel-title"></div>
+            <div class="skel skel-bar w80"></div>
+            <div class="skel skel-bar w60"></div>
+            <div class="skel skel-bar w40"></div>
+        </div>
+        <div class="skeleton-card">
+            <div class="skel skel-title"></div>
+            <div class="skel skel-bar w60"></div>
+            <div class="skel skel-bar w80"></div>
+            <div class="skel skel-bar w40"></div>
+        </div>
+    </div>
+
+    <div id="rep-display"></div>
+
+    <div class="status-bar" id="status-bar" style="display:none;">
+        <div class="status-left">
+            <div class="status-dot" id="status-dot"></div>
+            <span id="status-msg">Synchronizing…</span>
+        </div>
+        <div class="status-right" id="status-time"></div>
+    </div>
+
+</main>
+
+<script>
+
+    const API_URL = "https://script.google.com/macros/s/AKfycbwxTDTmhFTeyWH9Ln5qLNefGKVhyho8J2F1hkMAa8yMhsBopwhJLs2rc91_YPNfcKyMTg/exec";
+
+    const FAST_INTERVAL = 15_000;   
+    const FULL_INTERVAL = 300_000;  
+
+    const STORAGE_KEY_HASH = 'vm_last_data_hash';
+    const STORAGE_KEY_TS   = 'vm_last_changed_ts';
+
+    function hashData(obj) {
+        const str = JSON.stringify(obj);
+        let h = 0;
+        for (let i = 0; i < str.length; i++) h = Math.imul(31, h) + str.charCodeAt(i) | 0;
+        return h.toString(36);
+    }
+
+    function getStoredHash() { try { return localStorage.getItem(STORAGE_KEY_HASH); } catch { return null; } }
+    function getStoredTs()   { try { return localStorage.getItem(STORAGE_KEY_TS);   } catch { return null; } }
+    function saveState(hash) {
+        try {
+            localStorage.setItem(STORAGE_KEY_HASH, hash);
+            localStorage.setItem(STORAGE_KEY_TS, new Date().toISOString());
+        } catch {}
+    }
+
+    function escHtml(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function fmtTs(iso) {
+        if (!iso) return '';
+        const d = new Date(iso);
+        if (isNaN(d)) return '';
+        return d.toLocaleString(undefined, { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    }
+
+    async function fetchWithTimeout(url, ms = 10000) {
+        const ctrl = new AbortController();
+        const id   = setTimeout(() => ctrl.abort(), ms);
+        try {
+            const res = await fetch(url, { cache: 'no-store', signal: ctrl.signal });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.json();
+        } finally {
+            clearTimeout(id);
+        }
+    }
+
+    const GRADE_META = {
+        7:  { label: 'Grade 7',  cls: 'g7',  color: '#d4600a' },
+        11: { label: 'Grade 11', cls: 'g11', color: '#1a4fa0' },
+    };
+
+    function renderGradeCard(gradeNum, candidates) {
+        const meta      = GRADE_META[gradeNum] || { label: 'Grade ' + gradeNum, cls: 'g11', color: '#1a4fa0' };
+        const sorted    = [...candidates].sort((a, b) => b.votes - a.votes);
+        const maxVotes  = sorted[0]?.votes || 1;
+        const total     = sorted.reduce((s, c) => s + c.votes, 0);
+
+        const rows = sorted.map((c, i) => {
+            const pct    = total > 0 ? ((c.votes / total) * 100).toFixed(1) : '0.0';
+            const barPct = maxVotes > 0 ? Math.min((c.votes / maxVotes) * 100, 100) : 0;
+            const isTop  = i === 0;
+
+            return `
+            <div class="candidate-row${isTop ? ' leading' : ''}">
+                <div class="candidate-meta">
+                    <div class="candidate-left">
+                        <span class="candidate-rank ${isTop ? 'rank-1' : 'rank-other'}">${i + 1}</span>
+                        <span class="candidate-name">${escHtml(c.name)}</span>
+                        ${isTop ? '<span class="leading-tag">Leading</span>' : ''}
+                    </div>
+                    <div class="candidate-right">
+                        <span class="candidate-votes">${c.votes.toLocaleString()}</span>
+                        <span class="candidate-pct">${pct}%</span>
+                    </div>
+                </div>
+                <div class="bar-track">
+                    <div class="bar-fill" style="background:${meta.color}; width:${barPct}%"></div>
+                </div>
+            </div>`;
+        }).join('');
+
+        return `
+        <div class="grade-card">
+            <div class="card-header">
+                <div class="grade-pill ${meta.cls}">${gradeNum}</div>
+                <div>
+                    <div class="grade-label">${meta.label}</div>
+                    <div class="grade-sub">Representative Candidates</div>
+                </div>
+                <span class="candidate-count">${candidates.length} candidate${candidates.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div class="candidates-list">${rows}</div>
+        </div>`;
+    }
+
+    function setStatus(state, msg) {
+        const bar   = document.getElementById('status-bar');
+        const dot   = document.getElementById('status-dot');
+        const msgEl = document.getElementById('status-msg');
+        const tsEl  = document.getElementById('status-time');
+        bar.style.display = 'flex';
+        dot.className = 'status-dot' + (state === 'ok' ? '' : ' ' + state);
+        msgEl.textContent = msg;
+        tsEl.textContent  = fmtTs(getStoredTs()) ? 'Updated ' + fmtTs(getStoredTs()) : '';
+    }
+
+    function updateTallyBadge(data) {
+        const badge = document.getElementById('tally-badge');
+        if (!badge) return;
+        const total = [7, 11].reduce((s, n) => {
+            const arr = data.reps?.['g' + n];
+            return s + (arr ? arr.reduce((ss, c) => ss + c.votes, 0) : 0);
+        }, 0);
+        badge.textContent = total.toLocaleString() + ' total votes';
+    }
+
+    function flashUpdate() {
+        let el = document.getElementById('update-flash');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'update-flash';
+            el.textContent = '✦ Tally updated — displaying latest results';
+            document.body.prepend(el);
+        }
+        requestAnimationFrame(() => {
+            el.style.transform = 'translateY(0)';
+            clearTimeout(el._t);
+            el._t = setTimeout(() => { el.style.transform = 'translateY(-100%)'; }, 3000);
+        });
+    }
+
+    let isFetching = false;
+    let firstLoad  = true;
+
+    async function fetchAndRender(quiet = false) {
+        if (isFetching) return null;
+        isFetching = true;
+        if (!quiet) setStatus('loading', 'Fetching latest tally…');
+
+        try {
+            const data    = await fetchWithTimeout(API_URL);
+            const newHash = hashData(data.reps || {});
+            const changed = newHash !== getStoredHash();
+
+            if (changed) saveState(newHash);
+
+            const repDiv = document.getElementById('rep-display');
+
+            if (firstLoad) {
+                document.getElementById('skeleton').style.display = 'none';
+                firstLoad = false;
+            }
+
+            repDiv.innerHTML = [7, 11]
+                .filter(n => data.reps?.['g' + n]?.length)
+                .map(n    => renderGradeCard(n, data.reps['g' + n]))
+                .join('');
+
+            if (!repDiv.innerHTML.trim()) {
+                repDiv.innerHTML = `
+                <div class="empty-state">
+                    <svg width="52" height="52" fill="none" viewBox="0 0 24 24"><path stroke="#7b8fa8" stroke-width="1.4" d="M9 12h6M9 16h6M7 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-2M9 4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1H9V4Z"/></svg>
+                    <div class="state-title">No tally data yet</div>
+                    <p>Vote counts will appear here once the tally begins.</p>
+                </div>`;
+            }
+
+            updateTallyBadge(data);
+            setStatus('ok', 'Live — refreshing every 15 s');
+            return changed;
+
+        } catch (err) {
+            if (firstLoad) {
+                document.getElementById('skeleton').style.display = 'none';
+                firstLoad = false;
+                document.getElementById('rep-display').innerHTML = `
+                <div class="empty-state">
+                    <svg width="52" height="52" fill="none" viewBox="0 0 24 24"><path stroke="#ef4444" stroke-width="1.4" d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+                    <div class="state-title">Can't reach the tally feed</div>
+                    <p>Check that your Apps Script is deployed with <strong>"Anyone"</strong> access, then try again.</p>
+                    <button class="retry-btn" onclick="fetchAndRender()">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3M20 7v4h-4M4 17v-4h4"/></svg>
+                        Retry
+                    </button>
+                </div>`;
+            }
+            setStatus('error', 'Connection error — retrying…');
+            console.error('[VoteMatrix]', err.message || err);
+            return null;
+
+        } finally {
+            isFetching = false;
+        }
+    }
+
+    async function fastCheck() {
+        if (isFetching) return;
+        try {
+            const data    = await fetchWithTimeout(API_URL);
+            const newHash = hashData(data.reps || {});
+            if (newHash !== getStoredHash()) {
+                const changed = await fetchAndRender(true);
+                if (changed) flashUpdate();
+                resetFullTimer();
+            }
+        } catch { }
+    }
+
+    async function fullRender() {
+        const changed = await fetchAndRender(true);
+        if (changed) flashUpdate();
+    }
+
+    let fullTimer;
+    function resetFullTimer() {
+        clearInterval(fullTimer);
+        fullTimer = setInterval(fullRender, FULL_INTERVAL);
+    }
+
+    resetFullTimer();
+    setInterval(fastCheck, FAST_INTERVAL);
+    fetchAndRender();   
+</script>
+</body>
+</html>
